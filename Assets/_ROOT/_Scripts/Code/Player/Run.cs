@@ -13,11 +13,10 @@ namespace Player
         [SerializeField] private float acceleration = 10;
         [SerializeField] private float maxAcceleration = 10;
 
+        [SerializeField] private float velocityRatio = 0;
         [SerializeField] private float distance;
 
         public UnityAction<float> OnDistanceChange;
-
-        private Rigidbody2D rb;
 
         private Sensor groundSensor;
 
@@ -26,14 +25,13 @@ namespace Player
         public float MaxAcceleration { get => maxAcceleration; set => maxAcceleration = value; }
         public float MaxVelocity { get => maxVelocity; set => maxVelocity = value; }
         public float Distance { get => distance; set => distance = value; }
+        public float VelocityRatio { get => velocityRatio; }
 
-        void Start()
+        void Awake()
         {
             bool hasGroundSensor = TryGetComponent<Sensor>(out groundSensor);
-            bool hasRigidBody = TryGetComponent<Rigidbody2D>(out rb);
 
             if (!hasGroundSensor) groundSensor = gameObject.AddComponent<Sensor>();
-            if (!hasRigidBody) rb = gameObject.AddComponent<Rigidbody2D>();
         }
 
         public void Action()
@@ -42,7 +40,7 @@ namespace Player
             OnDistanceChange?.Invoke(distance);
             if (groundSensor.State)
             {
-                float velocityRatio = velocity / maxVelocity;
+                velocityRatio = velocity / maxVelocity;
                 acceleration = maxAcceleration * (1 - velocityRatio);
                 velocity += acceleration * Time.fixedDeltaTime;
                 if (velocity >= maxVelocity)

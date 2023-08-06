@@ -12,13 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bbc29899bfebef849a9c379f9874c26c, type: 3}
   m_Name: PlayerRunner
   m_EditorClassIdentifier: 
-  velocity: 99.534775
+  velocity: 57.05062
   maxVelocity: 100
-  acceleration: 0.09341836
-  maxAcceleration: 20
-  OnVelocityChange:
-    m_PersistentCalls:
-      m_Calls: []
-  OnVelocityRatioChange:
-    m_PersistentCalls:
-      m_Calls: []
+  acceleration: 0.07377139
+  maxAcceleration: 2

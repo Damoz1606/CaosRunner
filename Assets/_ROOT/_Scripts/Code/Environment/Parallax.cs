@@ -1,7 +1,7 @@
 using SO;
 using UnityEngine;
 
-namespace Enviroment
+namespace Environment
 {
     public class Parallax : MonoBehaviour
     {
@@ -14,9 +14,9 @@ namespace Enviroment
             Vector2 position = transform.position;
             position.x -= realVelocity * Time.fixedDeltaTime;
 
-            if (position.x < -12)
+            if (position.x < -transform.localScale.x / 2)
             {
-                position.x = 22;
+                position.x = 18;
             }
 
             transform.position = position;

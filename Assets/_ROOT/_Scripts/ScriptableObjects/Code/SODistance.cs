@@ -11,12 +11,26 @@ namespace SO
 
         [SerializeField] private float distance;
 
-        public UnityEvent<float> OnDistanceChange;
+        private UnityEvent<float> OnDistanceChange;
 
         public void AddDistance(float newDistance)
         {
             distance += newDistance;
-            OnDistanceChange.Invoke(distance);
+            OnDistanceChange?.Invoke(distance);
+        }
+
+        public void Init()
+        {
+            distance = 0;
+        }
+
+        public void StartListeningDistanceChange(UnityAction<float> action)
+        {
+            OnDistanceChange.AddListener(action);
+        }
+        public void StopListeningDistanceChange(UnityAction<float> action)
+        {
+            OnDistanceChange.RemoveListener(action);
         }
     }
 }

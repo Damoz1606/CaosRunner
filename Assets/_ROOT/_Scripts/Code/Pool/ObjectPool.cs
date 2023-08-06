@@ -4,37 +4,38 @@ using UnityEngine;
 
 namespace Pool
 {
-    public abstract class ObjectPool : MonoBehaviour
+    public abstract class ObjectPool<T> : MonoBehaviour
+    where T : MonoBehaviour
     {
-        [SerializeField] private GameObject objectToPool;
-        [SerializeField] private int poolSize = 50;
-        [SerializeField] private int amountToPool;
+        [SerializeField] protected T objectToPool;
+        [SerializeField] protected int poolSize = 50;
+        [SerializeField] protected int amountToPool;
 
-        public static ObjectPool SharedInstance;
+        public static ObjectPool<T> SharedInstance;
 
-        private List<GameObject> pooledObjects = new();
+        protected List<T> pooledObjects = new();
 
         private void Awake()
         {
             SharedInstance = this;
         }
 
-        private void Start()
+        protected virtual void Start()
         {
-            GameObject tmp;
+            T tmp;
             for (int i = 0; i < amountToPool; i++)
             {
                 tmp = Instantiate(objectToPool);
-                tmp.SetActive(false);
+                tmp.gameObject.SetActive(false);
                 pooledObjects.Add(tmp);
             }
         }
 
-        public GameObject GetPooledObject()
+        public virtual T GetPooledObject()
         {
-            foreach (GameObject obj in pooledObjects)
+            foreach (T obj in pooledObjects)
             {
-                if (!obj.activeInHierarchy)
+                if (!obj.gameObject.activeInHierarchy)
                 {
                     return obj;
                 }
@@ -42,7 +43,7 @@ namespace Pool
 
             if (pooledObjects.Count > poolSize)
             {
-                GameObject tmp = Instantiate(objectToPool);
+                T tmp = Instantiate(objectToPool);
                 pooledObjects.Add(tmp);
                 return tmp;
             }

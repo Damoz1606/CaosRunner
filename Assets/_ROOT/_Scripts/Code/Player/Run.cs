@@ -18,6 +18,12 @@ namespace Player
             if (!hasGroundSensor) groundSensor = gameObject.AddComponent<Sensor>();
         }
 
+        private void Start()
+        {
+            runner.Init();
+            distance.Init();
+        }
+
         public void Action()
         {
             distance.AddDistance(runner.Velocity * Time.fixedDeltaTime);
@@ -25,8 +31,13 @@ namespace Player
             {
                 runner.Acceleration = runner.MaxAcceleration * (1 - runner.VelocityRatio);
                 runner.Velocity += runner.Acceleration * Time.fixedDeltaTime;
+                CreateDust();
                 if (runner.Velocity >= runner.MaxVelocity)
                     runner.Velocity = runner.MaxVelocity;
+            }
+            else
+            {
+                StopDust();
             }
         }
 

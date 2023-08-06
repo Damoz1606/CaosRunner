@@ -14,14 +14,18 @@ namespace Player
 
         void Start()
         {
-            hasJumpComponent = TryGetComponent<Jump>(out jumpComponent);
-            hasRunComponent = TryGetComponent<Run>(out runComponent);
+            hasJumpComponent = TryGetComponent(out jumpComponent);
+            hasRunComponent = TryGetComponent(out runComponent);
+        }
+
+        private void Update()
+        {
+            jumpComponent.ActionUpdate();
         }
 
         void FixedUpdate()
         {
-            if (hasRunComponent) runComponent.Action();
-            // if (hasJumpComponent) jumpComponent.Action();
+            runComponent.Action();
         }
     }
 

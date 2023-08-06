@@ -14,8 +14,8 @@ namespace SO
         [SerializeField] private float acceleration = 10;
         [SerializeField] private float maxAcceleration = 10;
 
-        public UnityEvent<float> OnVelocityChange;
-        public UnityEvent<float> OnVelocityRatioChange;
+        private UnityEvent<float> OnVelocityChange;
+        private UnityEvent<float> OnVelocityRatioChange;
 
         public float Velocity
         {
@@ -31,12 +31,30 @@ namespace SO
         public float Acceleration { get => acceleration; set => acceleration = value; }
         public float MaxAcceleration { get => maxAcceleration; }
 
-        private void Reset()
+        public void Init()
         {
             velocity = 0;
-            maxVelocity = 100;
             acceleration = 10;
-            maxAcceleration = 10;
+        }
+
+        public void StartListeningVelocityChange(UnityAction<float> action)
+        {
+            OnVelocityChange.AddListener(action);
+        }
+
+        public void StopListeningVelocityChange(UnityAction<float> action)
+        {
+            OnVelocityChange.RemoveListener(action);
+        }
+
+        public void StartListenVelocityRatioChange(UnityAction<float> action)
+        {
+            OnVelocityRatioChange.AddListener(action);
+        }
+
+        public void StopListenVelocityRatioChange(UnityAction<float> action)
+        {
+            OnVelocityRatioChange.RemoveListener(action);
         }
     }
 }

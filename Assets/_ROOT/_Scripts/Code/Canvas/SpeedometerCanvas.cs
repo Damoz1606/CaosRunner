@@ -19,7 +19,7 @@ namespace UICanvas
 
         private void Awake()
         {
-            bool hasSlider = TryGetComponent<Slider>(out slider);
+            bool hasSlider = TryGetComponent(out slider);
             if (!hasSlider) slider = gameObject.AddComponent<Slider>();
         }
 
@@ -36,12 +36,12 @@ namespace UICanvas
 
         private void OnEnable()
         {
-            runner.OnVelocityRatioChange.AddListener(SetSpeed);
+            runner.StartListenVelocityRatioChange(SetSpeed);
         }
 
         private void OnDisable()
         {
-            runner.OnVelocityRatioChange.AddListener(SetSpeed);
+            runner.StopListenVelocityRatioChange(SetSpeed);
         }
 
         private void SetSpeed(float value)

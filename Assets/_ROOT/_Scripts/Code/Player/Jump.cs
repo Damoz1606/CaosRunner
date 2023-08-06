@@ -28,7 +28,7 @@ namespace Player
                 groundSensor = gameObject.AddComponent<Utils.Sensor>();
         }
 
-        private void Update()
+        public void ActionUpdate()
         {
             if (isJumping)
             {
@@ -40,20 +40,20 @@ namespace Player
             }
         }
 
-        public void OnJump(InputValue value)
+        private void OnJump(InputValue value)
         {
             if (groundSensor.State && value.isPressed) StartJump();
             else if (isJumping) EndJump();
         }
 
-        public void StartJump(bool started = true)
+        private void StartJump(bool started = true)
         {
             rb.velocity = Vector2.up * jumper.Force;
             if (started) timer = Mathf.Clamp(jumper.MaxJumpTime * runner.VelocityRatio, jumper.MinJumpTime, jumper.MaxJumpTime);
             if (started) isJumping = true;
         }
 
-        public void EndJump()
+        private void EndJump()
         {
             timer = 0;
             isJumping = false;

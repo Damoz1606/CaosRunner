@@ -1,56 +1,58 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Pool;
 using SO;
 using UnityEngine;
 
-namespace Enviroment
+namespace Environment
 {
     public class Ground : MonoBehaviour
     {
         [SerializeField] private SORun runner;
 
-        [SerializeField] private Obstacle obstaclePrefab;
-
-        [SerializeField] private float groundHeight;
         [SerializeField] private float groundRight;
         [SerializeField] private float screenRight;
 
-        [SerializeField] private float minDistince = 0.5f;
-        [SerializeField] private float maxDistince = 10;
+        [SerializeField] private float maxDistance = 5;
+        [SerializeField] private float minDistance = 0;
 
-        bool didGenerateFloor = false;
-
-        private BoxCollider2D bCollider;
-
-        public float GroundHeight { get => groundHeight; set => groundHeight = value; }
+        private bool didGroundBeenGenerated = false;
 
         private void Awake()
         {
-            bCollider = gameObject.GetComponent<BoxCollider2D>();
-            groundHeight = transform.position.y + (bCollider.size.y / 2);
             screenRight = Camera.main.transform.position.x * 2;
         }
 
+        public void OnActiveGround()
+        {
+            didGroundBeenGenerated = false;
+            gameObject.SetActive(true);
+        }
+
+        public void OnDeactiveGround()
+        {
+            gameObject.SetActive(false);
+        }
 
         private void FixedUpdate()
         {
             Vector2 position = transform.position;
-            position.x -= runner.Velocity * Time.fixedDeltaTime * 0.5f;
+            position.x -= runner.Velocity * Time.fixedDeltaTime * 0.2f;
 
             groundRight = transform.position.x + transform.localScale.x / 2;
 
             if (groundRight < 0)
             {
-                Destroy(gameObject);
+                OnDeactiveGround();
                 return;
             }
 
-            if (!didGenerateFloor)
+            if (!didGroundBeenGenerated)
             {
                 if (groundRight < screenRight)
                 {
-                    didGenerateFloor = true;
+                    didGroundBeenGenerated = true;
                     GenerateGround();
                 }
             }
@@ -60,36 +62,22 @@ namespace Enviroment
 
         private void GenerateGround()
         {
-            float distanceX = Mathf.Clamp(maxDistince * runner.VelocityRatio, minDistince, maxDistince);
+            float distanceX = (runner.VelocityRatio >= 0.25)
+            ? Random.Range(minDistance, maxDistance)
+            : minDistance - 0.1f;
 
-            float distanceY = (runner.VelocityRatio >= 0.5)
-            ? Random.Range(-transform.localScale.y / 3, transform.localScale.y / 2) * runner.VelocityRatio
-            : Random.Range(0, transform.position.y);
+            distanceX = (distanceX < 1) ? Mathf.Ceil(distanceX) : distanceX;
 
-
-            Vector3 spawnPosition = new(transform.localScale.x / 2 + screenRight + distanceX, distanceY);
-
-            Ground newFloor = Instantiate(gameObject, spawnPosition, Quaternion.identity).GetComponent<Ground>();
-
-            newFloor.GroundHeight = newFloor.transform.position.y - distanceY + (newFloor.transform.localScale.y / 2);
-
-            int numberObstacles = Random.Range(0, 4);
-            List<float> usedPositions = new List<float>();
-
-            float minObstaclePositionX = newFloor.transform.position.x - (newFloor.transform.localScale.x / 2);
-            float maxObstaclePositionX = newFloor.transform.position.x + (newFloor.transform.localScale.x / 2);
-
-            float offsetNegativeX = -obstaclePrefab.transform.localScale.x / 2;
-            float offsetPositiveX = obstaclePrefab.transform.localScale.x / 2;
-
-            for (int i = 0; i < numberObstacles; i++)
-            {
-                float newPositionX = Random.Range(minObstaclePositionX, maxObstaclePositionX);
-                Obstacle tObstacle = Instantiate(obstaclePrefab, new Vector3(newPositionX, newFloor.groundHeight), Quaternion.identity);
-                tObstacle.transform.SetParent(newFloor.transform);
-            }
+            float distanceY = (runner.VelocityRatio >= 0.25)
+            ? Random.Range(-transform.localScale.y / 2, transform.localScale.y / 2) * runner.VelocityRatio
+            : transform.position.y;
 
 
+
+            Ground newGround = GroundPool.SharedInstance.GetPooledObject();
+            Vector3 spawnPosition = new(newGround.transform.localScale.x / 2 + groundRight + distanceX, distanceY);
+            newGround.transform.position = spawnPosition;
+            newGround.OnActiveGround();
         }
     }
 }

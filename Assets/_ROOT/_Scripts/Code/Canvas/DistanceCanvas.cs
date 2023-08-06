@@ -15,12 +15,12 @@ namespace UICanvas
 
         private void OnEnable()
         {
-            distance.OnDistanceChange.AddListener(UpdateUI);
+            distance.StartListeningDistanceChange(UpdateUI);
         }
 
         private void OnDisable()
         {
-            distance.OnDistanceChange.RemoveListener(UpdateUI);
+            distance.StopListeningDistanceChange(UpdateUI);
         }
 
         private void UpdateUI(float distance)

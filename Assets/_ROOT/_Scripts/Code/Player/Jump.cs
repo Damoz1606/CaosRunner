@@ -1,73 +1,62 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using PlayerActions;
+using SO;
 using UnityEngine;
-using Utils;
+using UnityEngine.InputSystem;
 
 namespace Player
 {
     public class Jump : MonoBehaviour
     {
-        [SerializeField] private float minHeight = 10f;
-        [SerializeField] private float maxHeight = 35f;
-        [SerializeField] private float jumpForce = 10f;
-        [SerializeField] private float counterForce = 5f;
+        [SerializeField] private SORun runner;
+        [SerializeField] private SOJump jumper;
 
-        private bool jumpWasLifted = false;
+        private float timer = 0;
 
-        private Run runner;
+        private bool isJumping = false;
 
-        private Sensor groundSensor;
-
-        private JumpInputSystem jumpInputSystem;
+        private Utils.Sensor groundSensor;
 
         private Rigidbody2D rb;
 
         private void Awake()
         {
-            bool hasRunner = TryGetComponent<Run>(out runner);
-            bool hasInputSystem = TryGetComponent<JumpInputSystem>(out jumpInputSystem);
-            bool hasRigidBody = TryGetComponent<Rigidbody2D>(out rb);
-            bool hasGroundSensor = TryGetComponent<Sensor>(out groundSensor);
+            bool hasRigidBody = TryGetComponent(out rb);
+            bool hasGroundSensor = TryGetComponent(out groundSensor);
 
-            if (!hasRunner)
-                runner = gameObject.AddComponent<Run>();
-            if (!hasInputSystem)
-                jumpInputSystem = gameObject.AddComponent<JumpInputSystem>();
             if (!hasRigidBody)
                 rb = gameObject.GetComponent<Rigidbody2D>();
             if (!hasGroundSensor)
-                groundSensor = gameObject.AddComponent<Sensor>();
+                groundSensor = gameObject.AddComponent<Utils.Sensor>();
         }
 
-        public void Action()
+        private void Update()
         {
-            float minForce = CalculateJumpForce(Physics2D.gravity.magnitude * rb.gravityScale, minHeight, rb.mass);
-            float maxForce = CalculateJumpForce(Physics2D.gravity.magnitude * rb.gravityScale, maxHeight, rb.mass);
-            if (groundSensor.State && jumpInputSystem.IsJumping)
+            if (isJumping)
             {
-                Debug.Log($"Max: {maxForce} - Min: {minForce}");
-                float forceToBeAdded = Mathf.Clamp(jumpForce * rb.mass * runner.VelocityRatio, minForce, maxForce);
-                rb.AddForce(Vector2.up * forceToBeAdded, ForceMode2D.Impulse);
-                jumpInputSystem.IsJumping = false;
-                jumpWasLifted = false;
-            }
-            if (!groundSensor.State && jumpInputSystem.IsHeld && !jumpWasLifted)
-            {
-                float forceToBeAdded = counterForce * runner.VelocityRatio;
-                rb.AddForce(Vector2.up * forceToBeAdded, ForceMode2D.Impulse);
-            }
-            else if (!groundSensor.State && !jumpInputSystem.IsHeld)
-            {
-                jumpWasLifted = true;
+                timer -= Time.deltaTime;
+                if (timer <= 0)
+                    EndJump();
+                else
+                    StartJump(false);
             }
         }
 
-        private float CalculateJumpForce(float gravity, float height, float mass)
+        public void OnJump(InputValue value)
         {
-            float ep = mass * gravity * height;
-            return Mathf.Sqrt(2 * ep * 1 / mass);
+            if (groundSensor.State && value.isPressed) StartJump();
+            else if (isJumping) EndJump();
+        }
+
+        public void StartJump(bool started = true)
+        {
+            rb.velocity = Vector2.up * jumper.Force;
+            if (started) timer = Mathf.Clamp(jumper.MaxJumpTime * runner.VelocityRatio, jumper.MinJumpTime, jumper.MaxJumpTime);
+            if (started) isJumping = true;
+        }
+
+        public void EndJump()
+        {
+            timer = 0;
+            isJumping = false;
         }
     }
 

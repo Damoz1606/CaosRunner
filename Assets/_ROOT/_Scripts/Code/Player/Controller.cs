@@ -21,7 +21,7 @@ namespace Player
         void FixedUpdate()
         {
             if (hasRunComponent) runComponent.Action();
-            if (hasJumpComponent) jumpComponent.Action();
+            // if (hasJumpComponent) jumpComponent.Action();
         }
     }
 

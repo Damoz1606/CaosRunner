@@ -1,4 +1,6 @@
+using System;
 using SO;
+using SO.Variables;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -6,8 +8,11 @@ namespace Player
 {
     public class Jump : MonoBehaviour
     {
-        [SerializeField] private SORun runner;
-        [SerializeField] private SOJump jumper;
+        [SerializeField] private FloatSO velocity;
+
+        [SerializeField] private float minJumpTime = 0.10f;
+        [SerializeField] private float maxJumpTime = 0.35f;
+        [SerializeField] private float force = 10f;
 
         private float timer = 0;
 
@@ -48,8 +53,8 @@ namespace Player
 
         private void StartJump(bool started = true)
         {
-            rb.velocity = Vector2.up * jumper.Force;
-            if (started) timer = Mathf.Clamp(jumper.MaxJumpTime * runner.VelocityRatio, jumper.MinJumpTime, jumper.MaxJumpTime);
+            rb.velocity = Vector2.up * force;
+            if (started) timer = Mathf.Clamp(maxJumpTime * velocity.ValueRatio, minJumpTime, maxJumpTime);
             if (started) isJumping = true;
         }
 

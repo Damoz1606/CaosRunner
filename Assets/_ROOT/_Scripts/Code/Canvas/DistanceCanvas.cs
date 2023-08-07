@@ -1,12 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
+using SO.Variables;
 using UnityEngine;
 
 namespace UICanvas
 {
     public class DistanceCanvas : MonoBehaviour
     {
-        [SerializeField] private SO.SODistance distance;
+        [SerializeField] private FloatSO distance;
         private TMPro.TextMeshProUGUI distanceText;
         void Awake()
         {
@@ -15,12 +16,12 @@ namespace UICanvas
 
         private void OnEnable()
         {
-            distance.StartListeningDistanceChange(UpdateUI);
+            distance.StartListeningOnValueChange(UpdateUI);
         }
 
         private void OnDisable()
         {
-            distance.StopListeningDistanceChange(UpdateUI);
+            distance.StartListeningOnValueChange(UpdateUI);
         }
 
         private void UpdateUI(float distance)

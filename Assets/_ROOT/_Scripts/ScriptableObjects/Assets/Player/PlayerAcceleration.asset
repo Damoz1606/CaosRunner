@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7efbf607c21af2b4fb500ba831da490a, type: 3}
-  m_Name: PlayerDistance
+  m_Name: PlayerAcceleration
   m_EditorClassIdentifier: 
-  value: 10
-  initialValue: 0
-  allowMaxAndMinValue: 0
+  value: 0.8773818
+  initialValue: 10
+  allowMaxAndMinValue: 1
   minValue: 0
-  maxValue: 10
+  maxValue: 1

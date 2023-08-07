@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using SO;
+using SO.Variables;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -15,7 +16,7 @@ namespace UICanvas
 
         private Slider slider;
 
-        public SORun runner;
+        public FloatSO velocity;
 
         private void Awake()
         {
@@ -36,12 +37,12 @@ namespace UICanvas
 
         private void OnEnable()
         {
-            runner.StartListenVelocityRatioChange(SetSpeed);
+            velocity.StartListeningOnValueRatioChange(SetSpeed);
         }
 
         private void OnDisable()
         {
-            runner.StopListenVelocityRatioChange(SetSpeed);
+            velocity.StopListeningOnValueRatioChange(SetSpeed);
         }
 
         private void SetSpeed(float value)

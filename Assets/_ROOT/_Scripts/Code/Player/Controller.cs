@@ -7,15 +7,13 @@ namespace Player
     public class Controller : MonoBehaviour
     {
         private Jump jumpComponent;
-        private bool hasJumpComponent = false;
 
         private Run runComponent;
-        private bool hasRunComponent = false;
 
         void Start()
         {
-            hasJumpComponent = TryGetComponent(out jumpComponent);
-            hasRunComponent = TryGetComponent(out runComponent);
+            TryGetComponent(out jumpComponent);
+            TryGetComponent(out runComponent);
         }
 
         private void Update()

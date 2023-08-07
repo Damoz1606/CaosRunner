@@ -4,7 +4,6 @@ using UnityEngine;
 
 namespace SO
 {
-    [CreateAssetMenu(fileName = "Jump", menuName = "CaosRunner/Player/Variables/Jump", order = 0)]
     public class SOJump : ScriptableObject
     {
         [SerializeField] private float minJumpTime = 0.15f;

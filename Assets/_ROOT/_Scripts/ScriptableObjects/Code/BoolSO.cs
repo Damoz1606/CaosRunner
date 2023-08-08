@@ -8,8 +8,8 @@ namespace SO.Variables
     [CreateAssetMenu(fileName = "Bool", menuName = "CaosRunner/Variables/BoolSO", order = 0)]
     public class BoolSO : ScriptableObject
     {
-        private bool value = false;
-        private bool initialValue = false;
+        [SerializeField] private bool value = false;
+        [SerializeField] private bool initialValue = false;
 
         private UnityEvent<bool> OnValueChange;
 

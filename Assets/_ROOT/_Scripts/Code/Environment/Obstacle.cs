@@ -14,7 +14,7 @@ namespace Environment
 
         [SerializeField] private LayerMask playerMask;
 
-        [SerializeField] private Utils.Sensor sensor;
+        [SerializeField] private Utils.ComboSensor sensor;
 
         public UnityAction OnDeactive;
 

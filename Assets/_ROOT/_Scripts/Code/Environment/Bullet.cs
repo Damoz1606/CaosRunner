@@ -19,6 +19,7 @@ namespace Environment
 
         public void OnActiveBullet()
         {
+            currentDistance = 0;
             gameObject.SetActive(true);
         }
 
@@ -62,8 +63,8 @@ namespace Environment
             if ((playerMask.value & 1 << other.gameObject.layer) > 0)
             {
                 velocity.SetNewValue(velocity.Value - decreaseDamage);
-                OnDeactiveBullet();
             }
+            OnDeactiveBullet();
         }
 
     }

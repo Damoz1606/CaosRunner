@@ -8,6 +8,7 @@ namespace Manager
     {
         public static MasterManager SharedInstance;
 
+        public GameManager GameManager { get; private set; }
         public UIManager UIManager { get; private set; }
         public AudioManager AudioManager { get; private set; }
 
@@ -19,6 +20,7 @@ namespace Manager
                 return;
             }
             SharedInstance = this;
+            GameManager = GetComponentInChildren<GameManager>();
             AudioManager = GetComponentInChildren<AudioManager>();
             UIManager = GetComponentInChildren<UIManager>();
         }

@@ -1,19 +1,17 @@
+using Player;
 using UnityEngine;
 
 namespace Manager
 {
     public class GameManager : MonoBehaviour
     {
-        // Start is called before the first frame update
-        void Start()
+        private GameObject player;
+
+        public GameObject Player { get => player; }
+
+        private void Awake()
         {
-
-        }
-
-        // Update is called once per frame
-        void Update()
-        {
-
+            player = GameObject.Find("Player");
         }
     }
 }

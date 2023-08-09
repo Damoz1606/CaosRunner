@@ -23,7 +23,7 @@ namespace Utils
         [SerializeField] private Vector3 direction = Vector3.up;
         #endregion
 
-        private bool state = false;
+        [SerializeField] private bool state = false;
 
         public UnityAction<bool> OnChangeValue;
 

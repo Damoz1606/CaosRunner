@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7efbf607c21af2b4fb500ba831da490a, type: 3}
   m_Name: PlayerVelocity
   m_EditorClassIdentifier: 
-  value: 27.951931
+  value: 0
   initialValue: 0
   allowMaxAndMinValue: 1
   minValue: 0

@@ -41,7 +41,7 @@ namespace Pool
                 }
             }
 
-            if (pooledObjects.Count > poolSize)
+            if (pooledObjects.Count < poolSize)
             {
                 T tmp = Instantiate(objectToPool);
                 pooledObjects.Add(tmp);

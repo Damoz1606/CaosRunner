@@ -1,116 +1,106 @@
 using System.Collections;
 using System.Collections.Generic;
 using Environment;
+using Manager;
+using Pool;
+using SO.Variables;
 using UnityEngine;
+using Utils;
 
 namespace Character
 {
     public class Shooter : MonoBehaviour
     {
-        [SerializeField] private float minDistanceToShoot = 1f;
-        [SerializeField] private LayerMask playerMask;
+        [SerializeField] private FloatSO runner;
 
-        [SerializeField] private GameObject bulletPrefab;
         [SerializeField] private float bulletMoveSpeed;
-        [SerializeField] private int bustCount;
-        [SerializeField] private int bulletsPerBurst;
-        [SerializeField, Range(0, 360)] private float angleSpread;
+        [SerializeField] private float bulletDistance;
+
+        [SerializeField] private int burstCount = 5;
+        [SerializeField] private int bulletsPerBurst = 10;
+        [SerializeField] private float timeBetweenBurst = 1f;
+        [SerializeField] private float restTimeAfterBurst = 1f;
+
+        [SerializeField, Range(0, 359)] private int angleSpread = 0;
+
         [SerializeField] private float startingDistance = 0.1f;
-        [SerializeField] private float timeBetweenBurst;
-        [SerializeField] private float restTime = 1f;
 
         [SerializeField] private bool stagger = false;
         [SerializeField] private bool oscillate = false;
 
+        private EnemySensor sensor;
+
         private bool isShooting = false;
+
+        private void Awake()
+        {
+            TryGetComponent(out sensor);
+        }
 
         private void Update()
         {
-            bool playerInRange= Physics2D.OverlapCircle(transform.position, minDistanceToShoot, playerMask);
-
-            if (playerInRange)
-            {
-                Attack();
-            }
-        }
-
-        public void Attack()
-        {
-            if (!isShooting) StartCoroutine(ShootCoroutine());
+            if (sensor.State && !isShooting)
+                StartCoroutine(ShootCoroutine());
         }
 
         private IEnumerator ShootCoroutine()
         {
             isShooting = true;
+            float timeBetweenBullets = 0;
 
-            float timeBetweenBullets = 0f;
+            TargetConeOfInfluence(out float startAngle, out float endAngle, out float currentAngle, out float angleStep);
 
-            ConeOfInfluence(out float startAngle, out float endAngle, out float currentAngle, out float angleStep);
+            if (stagger) { timeBetweenBullets = timeBetweenBurst / bulletsPerBurst; }
 
-            if (stagger)
+            for (int i = 0; i < burstCount; i++)
             {
-                timeBetweenBullets = timeBetweenBurst / bulletsPerBurst;
-            }
-
-            for (int i = 0; i < bustCount; i++)
-            {
-                if (!oscillate)
+                if (stagger && oscillate)
                 {
-                    ConeOfInfluence(out startAngle, out endAngle, out currentAngle, out angleStep);
+                    float flag = Mathf.Pow(-1, i + 2);
+                    currentAngle = flag < 0 ? endAngle : startAngle;
+                    angleStep *= flag;
                 }
 
-                if (oscillate && i % 2 != 1)
-                {
-                    ConeOfInfluence(out startAngle, out endAngle, out currentAngle, out angleStep);
-                }
-                else if (oscillate)
-                {
-                    currentAngle = endAngle;
-                    endAngle = startAngle;
-                    startAngle = currentAngle;
-                    angleStep *= -1;
-                }
                 for (int j = 0; j < bulletsPerBurst; j++)
                 {
-                    Vector2 spawnBulletPosition = FindBulletSpawnPosition(currentAngle);
-                    GameObject newBullet = Instantiate(bulletPrefab, spawnBulletPosition, Quaternion.identity);
-
-                    newBullet.transform.right = newBullet.transform.position - transform.position;
-
-                    if (newBullet.TryGetComponent(out Bullet bullet))
+                    Vector2 position = FindBulletSpawnPosition(currentAngle);
+                    Bullet newBullet = BulletPool.SharedInstance.GetPooledObject();
+                    if (newBullet != null)
                     {
-                        bullet.UpdateMoveSpeed(bulletMoveSpeed);
+                        newBullet.transform.position = position;
+                        newBullet.transform.up = (newBullet.transform.position - transform.position).normalized;
+                        newBullet.UpdateMoveSpeed(bulletMoveSpeed + runner.Value);
+                        newBullet.UpdateBulletRange(bulletDistance);
+
+                        newBullet.OnActiveBullet();
                     }
 
                     currentAngle += angleStep;
 
-                    if (stagger) { yield return new WaitForSeconds(timeBetweenBullets); }
+                    if (stagger) yield return new WaitForSeconds(timeBetweenBullets);
                 }
-                currentAngle = startAngle;
 
-                if (!stagger)
-                {
-                    yield return new WaitForSeconds(timeBetweenBurst);
-                }
+                yield return new WaitForSeconds(timeBetweenBurst);
+                TargetConeOfInfluence(out startAngle, out endAngle, out currentAngle, out angleStep);
             }
 
-
-            yield return new WaitForSeconds(restTime);
-
+            yield return new WaitForSeconds(restTimeAfterBurst);
             isShooting = false;
         }
 
-        private void ConeOfInfluence(out float startAngle, out float endAngle, out float currentAngle, out float angleStep)
+        private void TargetConeOfInfluence(out float startAngle, out float endAngle, out float currentAngle, out float angleStep)
         {
-            float targetAngle = Mathf.Atan2(6, 1) * Mathf.Rad2Deg;
+            Vector3 targetDirection = (MasterManager.SharedInstance.GameManager.Player.transform.position - transform.position).normalized;
+            float targetAngle = Mathf.Atan2(targetDirection.y, targetDirection.x) * Mathf.Rad2Deg;
             startAngle = targetAngle;
             endAngle = targetAngle;
             currentAngle = targetAngle;
             angleStep = 0;
             if (angleSpread != 0)
             {
-                angleStep = angleSpread / (bulletsPerBurst - 1);
-                float halfAngleSpread = angleSpread / 2;
+                float bulletAmount = bulletsPerBurst - 1;
+                angleStep = angleSpread / (bulletAmount == 0 ? 1 : bulletAmount);
+                float halfAngleSpread = angleSpread / 2f;
                 startAngle = targetAngle - halfAngleSpread;
                 endAngle = targetAngle + halfAngleSpread;
                 currentAngle = startAngle;
@@ -119,32 +109,58 @@ namespace Character
 
         private Vector2 FindBulletSpawnPosition(float currentAngle)
         {
-            float x = transform.position.x + startingDistance * Mathf.Cos(currentAngle);
-            float y = transform.position.y + startingDistance * Mathf.Sin(currentAngle);
-
-            Vector2 position = new(x, y);
-
-            return position;
+            return new(
+                transform.position.x + startingDistance * Mathf.Cos(currentAngle * Mathf.Deg2Rad),
+                transform.position.y + startingDistance * Mathf.Sin(currentAngle * Mathf.Deg2Rad)
+            );
         }
 
         private void OnDrawGizmos()
         {
-            /* Gizmos.color = Color.green;
-            float halfAngleRad = angleSpread / 2f * Mathf.Deg2Rad;
-            Vector3 forward = transform.right;
+            Gizmos.color = Color.green;
+
+            Vector3 targetDirection = new(-1, 0, 0);
+            float targetAngle = Mathf.Atan2(targetDirection.y, targetDirection.x) * Mathf.Rad2Deg;
+            float startAngle = targetAngle;
+            float endAngle = targetAngle;
+
+            if (angleSpread != 0)
+            {
+                float halfAngleSpread = angleSpread / 2f;
+                startAngle = targetAngle - halfAngleSpread;
+                endAngle = targetAngle + halfAngleSpread;
+            }
 
             // Calculate cone base points
-            Vector3 basePoint1 = transform.position + Quaternion.Euler(0, 0, -halfAngleRad) * forward * startingDistance;
-            Vector3 basePoint2 = transform.position + Quaternion.Euler(0, 0, halfAngleRad) * forward * startingDistance;
+            Vector3 basePoint1Start = new(
+                transform.position.x + startingDistance * Mathf.Cos(startAngle * Mathf.Deg2Rad),
+                transform.position.y + startingDistance * Mathf.Sin(startAngle * Mathf.Deg2Rad)
+                );
+            Vector3 basePoint2Start = new(
+                transform.position.x + startingDistance * Mathf.Cos(endAngle * Mathf.Deg2Rad),
+                transform.position.y + startingDistance * Mathf.Sin(endAngle * Mathf.Deg2Rad)
+                );
+
+            Vector3 basePoint1End = new(
+            transform.position.x + bulletDistance * Mathf.Cos(startAngle * Mathf.Deg2Rad),
+            transform.position.y + bulletDistance * Mathf.Sin(startAngle * Mathf.Deg2Rad)
+            );
+            Vector3 basePoint2End = new(
+                transform.position.x + bulletDistance * Mathf.Cos(endAngle * Mathf.Deg2Rad),
+                transform.position.y + bulletDistance * Mathf.Sin(endAngle * Mathf.Deg2Rad)
+                );
 
             // Draw cone base lines
-            Gizmos.DrawLine(transform.position, basePoint1);
-            Gizmos.DrawLine(transform.position, basePoint2);
+            Gizmos.DrawLine(basePoint1Start, basePoint1End);
+            Gizmos.DrawLine(basePoint2Start, basePoint2End);
 
             // Draw cone side lines
-            Vector3 coneTip = transform.position + forward * minDistanceToShoot;
-            Gizmos.DrawLine(coneTip, basePoint1);
-            Gizmos.DrawLine(coneTip, basePoint2); */
+            Vector3 conebase = transform.position + targetDirection.normalized * startingDistance;
+            Gizmos.DrawLine(conebase, basePoint1Start);
+            Gizmos.DrawLine(conebase, basePoint2Start);
+            Vector3 coneTip = transform.position + targetDirection.normalized * bulletDistance;
+            Gizmos.DrawLine(coneTip, basePoint1End);
+            Gizmos.DrawLine(coneTip, basePoint2End);
         }
     }
 

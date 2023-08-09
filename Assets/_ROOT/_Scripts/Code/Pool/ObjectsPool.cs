@@ -53,7 +53,7 @@ namespace Pool
                 auxList.RemoveAt(itemIndex);
             }
 
-            if (pooledObjects.Count > poolSizePerObject)
+            if (pooledObjects.Count < poolSizePerObject)
             {
                 int itemIndex = Random.Range(0, pooledObjects.Count);
                 T objectToPool = pooledObjects[itemIndex];

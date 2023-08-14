@@ -23,7 +23,7 @@ namespace Player
 
         void FixedUpdate()
         {
-            runComponent.Action();
+            runComponent.ActionFixedUpdate();
         }
     }
 

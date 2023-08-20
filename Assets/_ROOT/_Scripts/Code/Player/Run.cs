@@ -12,14 +12,19 @@ namespace Player
         [SerializeField] private FloatSO distance;
 
         private bool isAlive = true;
+        private bool hasAnimator = false;
 
-        private Sensor groundSensor;
+        private Utils.GroundSensor groundSensor;
+
+        private Animator animator;
 
         void Awake()
         {
             bool hasGroundSensor = TryGetComponent(out groundSensor);
 
-            if (!hasGroundSensor) groundSensor = gameObject.AddComponent<Sensor>();
+            hasAnimator = TryGetComponent(out animator);
+
+            if (!hasGroundSensor) groundSensor = gameObject.AddComponent<Utils.GroundSensor>();
         }
 
         private void Start()
@@ -29,7 +34,12 @@ namespace Player
             distance.Init();
         }
 
-        public void Action()
+        public void ActionUpdate()
+        {
+            if (hasAnimator) OnAnimation();
+        }
+
+        public void ActionFixedUpdate()
         {
             if (!isAlive) return;
             distance.ChangeValueBy(velocity.Value * Time.fixedDeltaTime);
@@ -38,6 +48,11 @@ namespace Player
                 acceleration.SetNewValue(acceleration.MaxValue * (1 - velocity.ValueRatio));
                 velocity.ChangeValueBy(acceleration.Value * Time.fixedDeltaTime);
             }
+        }
+
+        private void OnAnimation()
+        {
+            animator.SetFloat("Speed Multiplier", 1 + velocity.ValueRatio);
         }
     }
 }
